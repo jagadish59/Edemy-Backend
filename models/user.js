@@ -36,6 +36,7 @@ const userSchema = new Schema({
         data:String,
         default:"",
     },
+    courses:[{type:[mongoose.Schema.Types.ObjectId],ref:'Course'}],
 
     stripe_account_id:"",
     stripe_seller:{}, 

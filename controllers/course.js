@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User=require('../models/User');
 const Course = require('../models/Course');
 import slugify from 'slugify';
 
@@ -9,7 +9,7 @@ export const uploadImage= async(req,res)=>{
     const {image} =req.body;
 
 
-    console.log(image)
+    
     res.status(200).send('image uplaod success fully to firebase');
 
      
@@ -21,9 +21,9 @@ export const create=async (req,res)=>{
 
 
 
-        console.log(req.body)
+        
         const alreadyexit =await  Course.findOne({slug:slugify(req.body.name.toLowerCase())})
-        console.log('already exit')
+        
         if(alreadyexit){return res.status(400).send('This title is already exit')}
 
         const course= await new Course({
@@ -49,7 +49,7 @@ export const read=async (req,res)=>{
     try {
 
         const data=await Course.findOne({slug:req.params.slug}).populate('instructor','_id name').exec()
-        console.log(data)
+    
         return res.json(data);
 
     }catch(err){
@@ -90,7 +90,7 @@ export const update= async(req,res)=>{
     try{
 
         const {slug}=req.params
-        console.log(slug)
+
         const course=await Course.findOne({slug})
 
         if(req.user._id!=course.instructor){
@@ -117,7 +117,7 @@ export const removeLesson=async(req,res)=>{
     try{
 
         const {slug,lessonId}=req.params
-        console.log(slug,lessonId)
+        
         const course=await Course.findOne({slug})
         if(req.user._id!=course.instructor){
             return res.status(400).send('unauthorized ')
@@ -148,10 +148,10 @@ try{
     const{slug,instructorId}=req.params
     const {_id,title,content,video,free_preview}=req.body
 
-    console.log(title)
+
     const course=await Course.findOne({slug})
-    console.log(req.user._id)
-    console.log(course.instructor[0]._id)
+    
+
     if(course.instructor[0]._id!=req.user._id){
         return res.status(401).send('unauthorized')
     }
@@ -166,7 +166,7 @@ try{
             'lessons.$.free_preview':free_preview,
         }
     },{new:true})
-    console.log(data);
+    
     res.status(200).send({ok:true})
 }
 catch(err){
@@ -175,4 +175,120 @@ catch(err){
 
 
 
+}
+
+
+export const publish= async (req,res)=>{
+
+    try{
+        
+        const {courseId}=req.params
+
+        const course=await Course.findById(courseId).select("instructor")
+        if(course.instructor[0]._id!=req.user._id){
+            return res.status(400).send('unauthorized id')
+        }
+
+        const updated=await Course.findByIdAndUpdate(courseId,{published:true},{new:true})
+        res.json(updated)
+
+
+
+    }catch(err){
+        console.log(err)
+    }
+}
+
+
+export const unpublish=async (req,res)=>{
+
+    try{
+
+        const {courseId}=req.params
+
+        const course=await Course.findById(courseId).select("instructor")
+        if(course.instructor[0]._id!=req.user._id){
+            return res.status(400).send('unauthorized id')
+        }
+        
+        const updated=await Course.findByIdAndUpdate(courseId,{published:false},{new:true})
+        res.json(updated)
+
+
+
+    }catch(err){
+        console.log(err)
+    }
+}
+
+
+export const courses =async(req,res)=>{
+
+    const  all = await Course.find({published:true}).populate('instructor','name _id').exec()
+
+    res.json(all);
+
+}
+
+export const checkEnrollment=async(req,res)=>{
+
+
+    try{
+        const {courseId}=req.params;
+        console.log(courseId)
+        const user=await User.findById(req.user._id)
+        //check if id is found in user courses
+        let ids=[]
+        let length=user.courses && user.courses.length;
+        for(let i=0;i<length;i++){
+            console.log(courseId)
+            ids.push(user.courses[i].toString())
+    
+        }
+        res.json({
+            status:ids.includes(courseId),
+            courses:await Course.findById(courseId).exec()
+        })
+
+    }
+    catch(err){console.log(err)}
+
+
+}
+
+export const freeEnrollment=async(req,res)=>{
+
+    try{
+
+        // check is course is free or not
+        const course=await Course.findById(req.params.courseId)
+
+        if(course.paid)return
+
+        const result= await User.findByIdAndUpdate(req.user._id,{
+            $addToSet:{courses:course._id},
+            
+
+        },{new:true})
+
+        res.json({
+            message:"congratulation your free enroll success",
+            course:course
+        })
+
+    }
+    catch(err){
+        console.log(err)
+        res.status(400).send('enroll filed')
+    }
+
+}
+export const paidEnrollment=async(req,res)=>{
+    try{
+
+    }
+    catch(err){
+        console.log(err)
+        
+    }
 }

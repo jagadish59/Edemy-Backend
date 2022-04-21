@@ -1,5 +1,5 @@
 
-const User = require('../models/user');
+const User = require('../models/User');
 const Course = require('../models/Course');
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET);

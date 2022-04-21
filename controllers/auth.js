@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/User');
 import jwt from 'jsonwebtoken';
 import {nanoid} from 'nanoid';
 let nodemailer = require('nodemailer');
