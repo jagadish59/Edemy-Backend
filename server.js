@@ -76,3 +76,4 @@ app.listen(port,()=>{
     console.log(`runniig in port ${port}`)
 })
 
+app.get('/',(req,res,next)=>res.send('udemy backend'))
