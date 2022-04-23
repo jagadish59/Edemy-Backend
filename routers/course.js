@@ -3,12 +3,12 @@ import express from 'express';
 const router=express.Router();
 
 //middleware
-import { requireSignin ,isInstructor} from '../middlewares';
+import { requireSignin ,isInstructor,isEnroll} from '../middlewares';
 
 //controller 
 import {uploadImage,create,read,addLesson,update,
     removeLesson,updateLesson,publish,unpublish,
-    courses,checkEnrollment,freeEnrollment,paidEnrollment} from '../controllers/course';
+    courses,checkEnrollment,freeEnrollment,paidEnrollment,userCourses} from '../controllers/course';
 //image 
 router.post('/course/upload-image',uploadImage)
 
@@ -36,4 +36,9 @@ router.get('/check-enrollment/:courseId',requireSignin,checkEnrollment)
 router.post('/free-enrollment/:courseId',requireSignin,freeEnrollment)
 
 router.post('/paid-enrollment/:courseId',requireSignin,paidEnrollment)
+
+router.get('/user/course/:slug',requireSignin,isEnroll ,read)
+
+//user course
+router.get('/user-courses',requireSignin,userCourses)
 module.exports=router;
